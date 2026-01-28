@@ -4,6 +4,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { TipoDeProducto } from './enums/enumTipoDeProducto';
 
 @Injectable()
 export class ProductsService {
@@ -41,10 +42,20 @@ export class ProductsService {
     const product = this.productsRepository.findOneBy({ id })
 
     if (!product) {
-      throw new HttpException(`Producto con id ${id} no encontrado`, HttpStatus.NOT_FOUND)
+      throw new HttpException(`Producto con id ${id} no encontrado`, HttpStatus.NOT_FOUND);
     }
 
     return product;
+  }
+
+  async findByType(tipo: TipoDeProducto) {
+    const products = await this.productsRepository.findBy({tipo})
+
+    if(products.length === 0) {
+      throw new HttpException('No hay stock de este tipo', HttpStatus.NOT_FOUND);
+    }
+
+    return products;
   }
 
   async update(id: number, dto: UpdateProductDto): Promise<Product> {

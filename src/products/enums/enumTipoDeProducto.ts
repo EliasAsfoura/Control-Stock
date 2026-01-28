@@ -1,5 +1,5 @@
 export enum TipoDeProducto {
- TECLADO = 'TECLADO',
+  TECLADO = 'TECLADO',
   MONITOR = 'MONITOR',
   PENDRIVE = 'PENDRIVE',
   MOUSE = 'MOUSE',
