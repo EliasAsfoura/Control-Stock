@@ -5,22 +5,25 @@ import { Product } from './entities/product.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TipoDeProducto } from './enums/enumTipoDeProducto';
+import { Movement } from 'src/movements/entities/movement.entity';
 
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private productsRepository: Repository<Product>,
+
+    @InjectRepository(Movement)
+    private movementRepository: Repository<Movement>,
   ) { }
 
   private generateSku(nombre: string, tipo: string): string {
     const tipoCode = tipo.substring(0, 3).toUpperCase();
     const nombreCode = nombre.substring(0, 3).toUpperCase();
-    const random = Math.floor(1000 + Math.random() * 9000);
+    const random = Math.floor(10000 + Math.random() * 90000); // más rango
 
     return `${tipoCode}-${nombreCode}-${random}`;
   }
-
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
     const product = this.productsRepository.create({
@@ -39,7 +42,7 @@ export class ProductsService {
   }
 
   async findById(id: number) {
-    const product = this.productsRepository.findOneBy({ id })
+    const product = await this.productsRepository.findOneBy({ id })
 
     if (!product) {
       throw new HttpException(`Producto con id ${id} no encontrado`, HttpStatus.NOT_FOUND);
@@ -49,10 +52,10 @@ export class ProductsService {
   }
 
   async findByType(tipo: TipoDeProducto) {
-    const products = await this.productsRepository.findBy({tipo})
+    const products = await this.productsRepository.findBy({ tipo })
 
-    if(products.length === 0) {
-      throw new HttpException('No hay stock de este tipo', HttpStatus.NOT_FOUND);
+    if (products.length === 0) {
+      throw new HttpException('No hay productos de este tipo', HttpStatus.NOT_FOUND);
     }
 
     return products;
@@ -71,12 +74,28 @@ export class ProductsService {
 
 
   async remove(id: number) {
-    const result = this.productsRepository.delete(id)
 
-    if (!result) {
-      throw new HttpException(`Producto con id ${id} no encontrado`, HttpStatus.NOT_FOUND)
+    const product = await this.productsRepository.findOneBy({id})
+
+    if (!product) {
+      throw new HttpException(`Producto con id ${id} no encontrado`, HttpStatus.NOT_FOUND);
     }
+
+    const count = await this.movementRepository.count({
+      where: { product: { id } },
+    });
+
+    if (count > 0) {
+      throw new HttpException(
+        'No se puede eliminar el producto porque tiene movimientos asociados',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    await this.productsRepository.delete(id);
+
+    return {message: `${product.nombre} eliminado correctamente`}
+
   }
+
 }
-
-

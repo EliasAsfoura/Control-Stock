@@ -14,12 +14,6 @@ export class CreateProductDto {
   @IsEnum(TipoDeProducto)
   tipo: TipoDeProducto;
 
-  @ApiProperty({ example: 10, minimum: 0, maximum: 1000 })
-  @IsNumber({}, { message: 'stock debe ser un número' })
-  @Min(0)
-  @Max(1000)
-  stock: number;
-
   @ApiProperty({ example: 15000, minimum: 1 })
   @IsNumber()
   @Min(1)
