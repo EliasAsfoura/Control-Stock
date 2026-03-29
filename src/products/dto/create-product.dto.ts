@@ -1,4 +1,4 @@
-import { IsNumber, IsString, IsEnum, Min, Max } from 'class-validator';
+import { IsNumber, IsString, IsEnum, Min, Max, IsOptional, IsUrl } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { TipoDeProducto } from '../enums/enumTipoDeProducto';
 
@@ -18,4 +18,10 @@ export class CreateProductDto {
   @IsNumber()
   @Min(1)
   precio: number;
+
+  @ApiProperty({ example: 'https://..../...webp'})
+  @IsOptional()
+  @IsString()
+  @IsUrl()
+  imagenUrl?: string
 }

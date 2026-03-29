@@ -26,6 +26,19 @@ export class ProductsService {
   }
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
+    
+     const productEncontrado = await this.productsRepository.findOne({
+      where: {
+        nombre: createProductDto.nombre,
+        tipo: createProductDto.tipo,
+      },
+
+     });
+
+     if (productEncontrado) {
+      throw new HttpException(`El producto ${productEncontrado.nombre} ya existe`, HttpStatus.BAD_REQUEST)
+     }
+    
     const product = this.productsRepository.create({
       ...createProductDto,
       sku: this.generateSku(

@@ -22,4 +22,7 @@ export class Product {
     @Column({ type: 'numeric', precision: 10, scale: 2 })
     precio: number;
 
+    @Column({ nullable: true })
+    imagenUrl: string;
+
 }
