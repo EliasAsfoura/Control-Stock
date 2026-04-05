@@ -8,18 +8,18 @@ export class CreateMovementDto {
         example: MovementType.OUT
     })
     @IsEnum(MovementType)
-    type: MovementType;
+    type!: MovementType;
 
     @ApiProperty({example: 10})
     @IsNumber()
-    quantity: number;
+    quantity!: number;
 
     @ApiProperty({example: 1})
     @IsNumber()
-    productId: number;
+    productId!: number;
 
     @ApiProperty({example: "Juan Carlo"})
     @IsOptional()
     @IsString()
-    clienteName: string;
+    clienteName!: string;
 }

@@ -5,24 +5,24 @@ import { TipoDeProducto } from "../enums/enumTipoDeProducto";
 export class Product {
 
     @PrimaryGeneratedColumn()
-    id: number;
+    id!: number;
 
     @Column()
-    nombre: string;
+    nombre!: string;
 
     @Column({ type: 'enum', enum: TipoDeProducto })
-    tipo: TipoDeProducto;
+    tipo!: TipoDeProducto;
 
     @Column({ unique: true })
-    sku: string;
+    sku?: string;
 
     @Column({ default: 0 })
-    stock: number;
+    stock!: number;
 
     @Column({ type: 'numeric', precision: 10, scale: 2 })
-    precio: number;
+    precio!: number;
 
     @Column({ nullable: true })
-    imagenUrl: string;
+    imagenUrl?: string;
 
 }

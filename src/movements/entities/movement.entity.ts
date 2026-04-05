@@ -10,24 +10,24 @@ export enum MovementType {
 export class Movement {
 
     @PrimaryGeneratedColumn()
-    id: number;
+    id!: number;
 
     @Column({
         type: 'enum',
         enum: MovementType,
     })
-    type: MovementType;
+    type!: MovementType;
 
     @Column({ nullable: true })
-    clienteName: string;
+    clienteName!: string;
 
     @Column()
-    quantity: number;
+    quantity!: number;
 
     @CreateDateColumn()
-    date: Date;
+    date!: Date;
 
     @ManyToOne(() => Product, { eager: true })
-    product: Product;
+    product!: Product;
 
 }

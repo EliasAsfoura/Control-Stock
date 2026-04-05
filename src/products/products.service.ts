@@ -2,10 +2,11 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, ILike,  Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TipoDeProducto } from './enums/enumTipoDeProducto';
 import { Movement } from 'src/movements/entities/movement.entity';
+import { ProductoFiltersDTO } from './dto/filterAll-product.dto';
 
 @Injectable()
 export class ProductsService {
@@ -26,19 +27,19 @@ export class ProductsService {
   }
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
-    
-     const productEncontrado = await this.productsRepository.findOne({
+
+    const productEncontrado = await this.productsRepository.findOne({
       where: {
         nombre: createProductDto.nombre,
         tipo: createProductDto.tipo,
       },
 
-     });
+    });
 
-     if (productEncontrado) {
+    if (productEncontrado) {
       throw new HttpException(`El producto ${productEncontrado.nombre} ya existe`, HttpStatus.BAD_REQUEST)
-     }
-    
+    }
+
     const product = this.productsRepository.create({
       ...createProductDto,
       sku: this.generateSku(
@@ -50,8 +51,36 @@ export class ProductsService {
     return this.productsRepository.save(product);
   }
 
-  async findAll(): Promise<Product[]> {
-    return this.productsRepository.find()
+  async findAll(filters: ProductoFiltersDTO): Promise<{data : Product[], total: number}> {
+
+    const where: FindOptionsWhere<Product> = {};
+
+    if (filters.nombre) {
+      where.nombre = ILike(`%${filters.nombre}%`);
+    }
+
+    if (filters.tipo) {
+      where.tipo = filters.tipo
+    }
+
+    if (filters.stock !== undefined) {
+      where.stock = filters.stock;
+    }
+
+    const page = filters.page ?? 1;
+    const limit = filters.limit ?? 10;
+
+
+    const [data, total] = await this.productsRepository.findAndCount({
+      where,
+      order: {
+        id: "ASC",
+      },
+      take: limit,
+      skip: (page - 1) * limit,
+    });
+
+    return {data, total}
   }
 
   async findById(id: number) {
@@ -88,7 +117,7 @@ export class ProductsService {
 
   async remove(id: number) {
 
-    const product = await this.productsRepository.findOneBy({id})
+    const product = await this.productsRepository.findOneBy({ id })
 
     if (!product) {
       throw new HttpException(`Producto con id ${id} no encontrado`, HttpStatus.NOT_FOUND);
@@ -107,7 +136,7 @@ export class ProductsService {
 
     await this.productsRepository.delete(id);
 
-    return {message: `${product.nombre} eliminado correctamente`}
+    return { message: `${product.nombre} eliminado correctamente` }
 
   }
 

@@ -5,19 +5,19 @@ import { TipoDeProducto } from '../enums/enumTipoDeProducto';
 export class CreateProductDto {
   @ApiProperty({ example: 'Teclado mecánico' })
   @IsString()
-  nombre: string;
+  nombre!: string;
 
   @ApiProperty({
     enum: TipoDeProducto,
     example: TipoDeProducto.TECLADO,
   })
   @IsEnum(TipoDeProducto)
-  tipo: TipoDeProducto;
+  tipo!: TipoDeProducto;
 
   @ApiProperty({ example: 15000, minimum: 1 })
   @IsNumber()
   @Min(1)
-  precio: number;
+  precio!: number;
 
   @ApiProperty({ example: 'https://..../...webp'})
   @IsOptional()
