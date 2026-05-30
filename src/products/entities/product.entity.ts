@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
 import { TipoDeProducto } from "../enums/enumTipoDeProducto";
+import { productPriceHistory } from "./productPriceHistory.entity";
 
 @Entity('products')
 export class Product {
@@ -24,5 +25,8 @@ export class Product {
 
     @Column({ nullable: true })
     imagenUrl?: string;
+
+    @ManyToOne(() => productPriceHistory, history => history.product,)
+    priceHistory?: productPriceHistory[];
 
 }

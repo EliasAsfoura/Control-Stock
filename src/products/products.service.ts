@@ -2,11 +2,12 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
-import { FindOptionsWhere, ILike,  Repository } from 'typeorm';
+import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TipoDeProducto } from './enums/enumTipoDeProducto';
 import { Movement } from 'src/movements/entities/movement.entity';
 import { ProductoFiltersDTO } from './dto/filterAll-product.dto';
+import { productPriceHistory } from './entities/productPriceHistory.entity';
 
 @Injectable()
 export class ProductsService {
@@ -16,6 +17,9 @@ export class ProductsService {
 
     @InjectRepository(Movement)
     private movementRepository: Repository<Movement>,
+
+    @InjectRepository(productPriceHistory)
+    private readonly priceHistoryRepository: Repository<productPriceHistory>,
   ) { }
 
   private generateSku(nombre: string, tipo: string): string {
@@ -51,7 +55,7 @@ export class ProductsService {
     return this.productsRepository.save(product);
   }
 
-  async findAll(filters: ProductoFiltersDTO): Promise<{data : Product[], total: number}> {
+  async findAll(filters: ProductoFiltersDTO): Promise<{ data: Product[], total: number }> {
 
     const where: FindOptionsWhere<Product> = {};
 
@@ -80,7 +84,7 @@ export class ProductsService {
       skip: (page - 1) * limit,
     });
 
-    return {data, total}
+    return { data, total }
   }
 
   async findById(id: number) {
@@ -103,16 +107,42 @@ export class ProductsService {
     return products;
   }
 
-  async update(id: number, dto: UpdateProductDto): Promise<Product> {
-    const product = await this.productsRepository.findOneBy({ id });
-
-    if (!product) {
-      throw new HttpException(`Producto con id ${id} no encontrado`, HttpStatus.NOT_FOUND);
-    }
-
-    const updated = this.productsRepository.merge(product, dto);
-    return this.productsRepository.save(updated);
+  async findPriceHistory(productId: number) {
+    return this.priceHistoryRepository.find({
+      where: {
+        product: { id: productId },
+      },
+      order: {
+        ChangedAt: 'DESC',
+      },
+    });
   }
+
+  async update(id: number, dto: UpdateProductDto): Promise<Product> {
+  const product = await this.productsRepository.findOneBy({ id });
+
+  if (!product) {
+    throw new HttpException(
+      `Producto con id ${id} no encontrado`,
+      HttpStatus.NOT_FOUND,
+    );
+  }
+
+  if (
+    dto.precio !== undefined &&
+    dto.precio !== product.precio
+  ) {
+    await this.priceHistoryRepository.save({
+      product,
+      oldPrice: product.precio,
+      newPrice: dto.precio,
+    });
+  }
+
+  const updated = this.productsRepository.merge(product, dto);
+
+  return this.productsRepository.save(updated);
+}
 
 
   async remove(id: number) {

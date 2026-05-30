@@ -4,6 +4,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { TipoDeProducto } from './enums/enumTipoDeProducto';
 import { ProductoFiltersDTO } from './dto/filterAll-product.dto';
+import { UpdateMovementDto } from 'src/movements/dto/update-movement.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -15,7 +16,7 @@ export class ProductsController {
   }
 
   @Get()
-  findAll(@Query() filters : ProductoFiltersDTO) {
+  findAll(@Query() filters: ProductoFiltersDTO) {
     return this.productsService.findAll(filters);
   }
 
@@ -27,6 +28,11 @@ export class ProductsController {
   @Get('tipo/:tipo')
   findByType(@Param('tipo', new ParseEnumPipe(TipoDeProducto)) tipo: TipoDeProducto) {
     return this.productsService.findByType(tipo)
+  }
+
+  @Get(':id/price-history')
+  findPriceHistory(@Param('id') id: number) {
+    return this.productsService.findPriceHistory(id);
   }
 
   @Patch(':id')

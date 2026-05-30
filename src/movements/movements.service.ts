@@ -53,7 +53,7 @@ export class MovementsService {
   }
 
   findOne(id: number) {
-    const movement = this.movementRepo.findOneBy({id});
+    const movement = this.movementRepo.findOneBy({ id });
 
     if (!movement) {
       throw new HttpException('Numero de Movimiento no encontrado', HttpStatus.NOT_FOUND);
@@ -66,7 +66,35 @@ export class MovementsService {
     return `This action updates a #${id} movement`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} movement`;
+  async remove(id: number) {
+    const movement = await this.movementRepo.findOne({
+      where: { id },
+      relations: ['product'],
+    });
+
+    if (!movement) {
+      throw new HttpException(
+        'Movimiento no encontrado',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const product = movement.product;
+
+    if (movement.type === MovementType.IN) {
+      product.stock -= movement.quantity;
+    }
+
+    if (movement.type === MovementType.OUT) {
+      product.stock += movement.quantity;
+    }
+
+    await this.productRepo.save(product);
+
+    await this.movementRepo.remove(movement);
+
+    return {
+      message: 'Movimiento eliminado correctamente',
+    };
   }
 }

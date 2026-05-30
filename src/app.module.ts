@@ -22,7 +22,6 @@ import { MovementsModule } from './movements/movements.module';
      }),
 
     ProductsModule,
-
     MovementsModule,
   ],
   controllers: [AppController],
