@@ -17,7 +17,13 @@ export class ProductoFiltersDTO {
     @Type(() => Number)
     stock?: number;
 
+    @IsOptional()
+    @IsNumber()
+    @Type(() => Number)
     page?: number;
 
+    @IsOptional()
+    @IsNumber()
+    @Type(() => Number)
     limit?: number;
 }

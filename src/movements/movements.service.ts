@@ -3,8 +3,9 @@ import { CreateMovementDto } from './dto/create-movement.dto';
 import { UpdateMovementDto } from './dto/update-movement.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Movement, MovementType } from './entities/movement.entity';
-import { Repository } from 'typeorm';
+import { Between, FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { Product } from 'src/products/entities/product.entity';
+import { MovementFiltersDTO } from './dto/filterAll-movement.dto';
 
 @Injectable()
 export class MovementsService {
@@ -48,12 +49,48 @@ export class MovementsService {
 
   }
 
-  findAll() {
-    return this.movementRepo.find();
+  async findAll(filters: MovementFiltersDTO): Promise<{ data: Movement[], total: number }> {
+
+    const where: FindOptionsWhere<Movement> = {};
+
+    if (filters.id !== 0 && filters.id !== undefined) {
+      where.id = filters.id;
+    }
+
+    if (filters.productId) {
+      where.product = { id: filters.productId };
+    }
+
+    if (filters.type) {
+      where.type = filters.type;
+    }
+    if (filters.clienteName) {
+      where.clienteName = ILike(`%${filters.clienteName}%`)
+    }
+    if (filters.dateFrom || filters.dateTo) {
+      where.date = Between(
+        filters.dateFrom ? new Date(filters.dateFrom) : new Date('1900-01-01'),
+        filters.dateTo ? new Date(filters.dateTo) : new Date()
+      );
+    }
+
+    const page = filters.page ?? 1;
+    const limit = filters.limit ?? 10;
+
+    const [data, total] = await this.movementRepo.findAndCount({
+      where,
+      order: {
+        id: "ASC",
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    return { data, total };
   }
 
-  findOne(id: number) {
-    const movement = this.movementRepo.findOneBy({ id });
+  async findOne(id: number) {
+    const movement = await this.movementRepo.findOneBy({ id });
 
     if (!movement) {
       throw new HttpException('Numero de Movimiento no encontrado', HttpStatus.NOT_FOUND);

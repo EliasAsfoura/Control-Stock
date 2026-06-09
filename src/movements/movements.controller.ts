@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { MovementsService } from './movements.service';
 import { CreateMovementDto } from './dto/create-movement.dto';
 import { UpdateMovementDto } from './dto/update-movement.dto';
+import { MovementFiltersDTO } from './dto/filterAll-movement.dto';
 
 @Controller('movements')
 export class MovementsController {
@@ -13,8 +14,8 @@ export class MovementsController {
   }
 
   @Get()
-  findAll() {
-    return this.movementsService.findAll();
+  findAll(@Query() filters: MovementFiltersDTO) {
+    return this.movementsService.findAll(filters);
   }
 
   @Get(':id')
